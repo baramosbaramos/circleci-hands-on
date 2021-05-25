@@ -5,7 +5,7 @@
 <script>
     export default {
         data: () => {
-            return {name: 'world'}
+            return {name: 'worldddd'}
         }
     }
 </script>
