@@ -1,42 +1,33 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/workspace
     docker:
-      - image: node:10.13.0
+      - image: circleci/golang:1.9.3
+    working_directory: /go/src/github.com/project/repo
     steps:
+      - setup_remote_docker:
+          version: 17.11.0-ce
+          docker_layer_caching: true
       - checkout
-      - restore_cache:
-          key: yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-      - run:
-          name: Install dependencies
-          command: yarn
       - run:
           name: Build
-          command: yarn build
-      - save_cache:
-          key: yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/workspace/node_modules
-      - persist_to_workspace:
-          root: . # workspaceのrootパス（絶対パスかworking_directoryからの相対パス）
-          paths:
-            - . # 共有するパス（絶対パスかrootからの相対パス）
-  test:
-    working_directory: ~/workspace
-    docker:
-      - image: node:10.13.0
-    steps:
-      - attach_workspace: # workspaceをアタッチする
-          at: .
+          command: docker build -t soubaramos/v1.4:latest .
       - run:
-          name: Test
-          command: yarn test
+          name: Tag to latest
+          command: docker tag soubaramos/v1.4:latest $soubaramos/v1.4:$CIRCLE_TAG
+      - run:
+          name: Docker Login
+          command: docker login -u soubaramos -p sou102606
+      - run:
+          name: Push image to registory
+          command: docker push soubaramos/v1.4
 workflows:
   version: 2
-  build_and_test:
+  build:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+      - build:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
