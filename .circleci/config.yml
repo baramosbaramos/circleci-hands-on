@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/workspace # 追加
     docker:
-      - image: node:9.4.0
+      - image: node:10.13.0
     steps:
       - checkout
       - restore_cache: # 追加
